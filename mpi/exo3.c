@@ -8,38 +8,20 @@
 #include <string.h>
 #include <errno.h>
 
-double f(double x)
-{
-    return 1.0f / (1 + x * x);
-}
-
-double integrale(int N, int me, int nproc)
-{
-    double aire;
-    for (int k = me * N / nproc; k < (me + 1) * N / nproc; k++)
-    {
-        aire += (1.0f / N) * f(k * 1.0f / N);
-    }
-    return aire;
-}
 
 void sendLigne(int me, int nproc, int N, double *tab)
 {
     MPI_Request r;
     if (me == 0)
     {
-        printf("222222222222222\n"); fflush(stdout);
         MPI_Isend(tab + N * (nproc-1), N, MPI_DOUBLE_PRECISION, 1, 0, MPI_COMM_WORLD,&r);
-        printf("222222222222222\n"); fflush(stdout);
     }
     else if (me == nproc-1)
     {
-        printf("333333333333\n"); fflush(stdout);
-        MPI_Isend(tab, N, MPI_DOUBLE_PRECISION, nproc - 1, 0, MPI_COMM_WORLD,&r);
+        MPI_Isend(tab, N, MPI_DOUBLE_PRECISION, nproc - 2, 0, MPI_COMM_WORLD,&r);
     }
     else
     {
-        printf("444444444444444\n"); fflush(stdout);
         MPI_Isend(tab, N, MPI_DOUBLE_PRECISION, me - 1, 0, MPI_COMM_WORLD,&r);
         MPI_Isend(tab + N * (nproc-1), N, MPI_DOUBLE_PRECISION, me + 1, 0, MPI_COMM_WORLD,&r);
     }
@@ -54,7 +36,7 @@ void recvLigne(int me, int nproc, int N, double *tab, double *ligneDown, double 
     }
     else if (me == nproc-1)
     {
-        MPI_Recv(ligneUp, N, MPI_DOUBLE_PRECISION, nproc - 1, MPI_ANY_TAG, MPI_COMM_WORLD,status);
+        MPI_Recv(ligneUp, N, MPI_DOUBLE_PRECISION, nproc - 2, MPI_ANY_TAG, MPI_COMM_WORLD,status);
     }
     else
     {
@@ -88,7 +70,7 @@ int main(int argc, char *argv[])
 
     double *tab = (double *) calloc(N * N / nproc , sizeof(double));
 
-    printf("azeazeazeazeaze\n"); fflush(stdout);
+
     for (int i = 0; i < nproc; i++)
     {
         for (int j = 0; j < N; j++)
@@ -105,34 +87,39 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
     sendLigne(me, nproc, N, tab);
 
-printf("11111111111111111111111\n"); fflush(stdout);
     recvLigne(me, nproc, N, tab, ligneDown, ligneUp,&status);
 
+    MPI_Barrier(MPI_COMM_WORLD);
     for (int n = 0; n < nproc; n++)
     {
         if (me == n)
         {
             for (int u = 0; u < N; u++)
             {
-                printf("%lf", ligneUp + u);
+                printf("%lf", *(ligneUp + u));
             }
             printf("\n");
-            for (int i = 0; i < nproc; i++)
+            for (int i = 0; i < N/nproc; i++)
             {
 
                 for (int j = 0; j < N; j++)
                 {
-                    printf("%lf", tab + i * j);
+                    printf("%lf", *(tab + i*N + j));
                 }
                 printf("\n");
             }
             for (int v = 0; v < N; v++)
             {
-                printf("%lf", ligneUp + v);
+                printf("%lf", *(ligneDown + v));
             }
             printf("\n");
         }
         MPI_Barrier(MPI_COMM_WORLD);
     }
+
+    
+    free(ligneDown);
+    free(tab);
+    free(ligneUp);
     return 0;
 }

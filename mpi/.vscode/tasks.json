@@ -6,7 +6,7 @@
         {
             "label": "build exo3",
             "type": "shell",
-            "command": "ls && make ./tp1exo3 && mpirun -np 4 ./bin/tp1exo3 4",
+            "command": "ls && make ./tp1exo3 && mpirun -np 4 ./bin/tp1exo3 16",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
