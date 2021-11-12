@@ -25,18 +25,23 @@ double integrale(int N, int me, int nproc)
 
 void sendLigne(int me, int nproc, int N, double *tab)
 {
+    MPI_Request r;
     if (me == 0)
     {
-        MPI_Isend(tab + N * (nproc-1), N, MPI_DOUBLE_PRECISION, 1, -1, MPI_COMM_WORLD);
+        printf("222222222222222\n"); fflush(stdout);
+        MPI_Isend(tab + N * (nproc-1), N, MPI_DOUBLE_PRECISION, 1, 0, MPI_COMM_WORLD,&r);
+        printf("222222222222222\n"); fflush(stdout);
     }
     else if (me == nproc-1)
     {
-        MPI_Isend(tab, N, MPI_DOUBLE_PRECISION, nproc - 1, -1, MPI_COMM_WORLD);
+        printf("333333333333\n"); fflush(stdout);
+        MPI_Isend(tab, N, MPI_DOUBLE_PRECISION, nproc - 1, 0, MPI_COMM_WORLD,&r);
     }
     else
     {
-        MPI_Isend(tab, N, MPI_DOUBLE_PRECISION, me - 1, -1, MPI_COMM_WORLD);
-        MPI_Isend(tab + N * (nproc-1), N, MPI_DOUBLE_PRECISION, me + 1, -1, MPI_COMM_WORLD);
+        printf("444444444444444\n"); fflush(stdout);
+        MPI_Isend(tab, N, MPI_DOUBLE_PRECISION, me - 1, 0, MPI_COMM_WORLD,&r);
+        MPI_Isend(tab + N * (nproc-1), N, MPI_DOUBLE_PRECISION, me + 1, 0, MPI_COMM_WORLD,&r);
     }
 }
 
@@ -45,16 +50,16 @@ void recvLigne(int me, int nproc, int N, double *tab, double *ligneDown, double 
     if (me == 0)
 
     {
-        MPI_Recv(ligneDown, N, MPI_DOUBLE_PRECISION, 1, -1, MPI_COMM_WORLD,status);
+        MPI_Recv(ligneDown, N, MPI_DOUBLE_PRECISION, 1, MPI_ANY_TAG, MPI_COMM_WORLD,status);
     }
     else if (me == nproc-1)
     {
-        MPI_Recv(ligneUp, N, MPI_DOUBLE_PRECISION, nproc - 1, -1, MPI_COMM_WORLD,status);
+        MPI_Recv(ligneUp, N, MPI_DOUBLE_PRECISION, nproc - 1, MPI_ANY_TAG, MPI_COMM_WORLD,status);
     }
     else
     {
-        MPI_Recv(ligneUp, N, MPI_DOUBLE_PRECISION, me - 1, -1, MPI_COMM_WORLD,status);
-        MPI_Recv(ligneDown, N, MPI_DOUBLE_PRECISION, me + 1, -1, MPI_COMM_WORLD,status);
+        MPI_Recv(ligneUp, N, MPI_DOUBLE_PRECISION, me - 1, MPI_ANY_TAG, MPI_COMM_WORLD,status);
+        MPI_Recv(ligneDown, N, MPI_DOUBLE_PRECISION, me + 1, MPI_ANY_TAG, MPI_COMM_WORLD,status);
     }
 }
 int main(int argc, char *argv[])
