@@ -4,9 +4,9 @@
 
 # include local arch. particularities
 
-
+LIBS    =   -lm
 .c:
-	mpicc -o $@ $<
+	mpicc -o $@ $< $(LIBS)
 	mv $@ ./bin/
 
 	
