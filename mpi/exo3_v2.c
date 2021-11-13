@@ -68,12 +68,8 @@ int main(int argc, char *argv[])
     N = atoi(argv[1]);
 
     int totalLignes = N/nproc +2; 
-
     double *tab = (double *) calloc(N * totalLignes , sizeof(double)); 
-    // plus deux ligne celle d'avant et celle d'apres 
-    // donc la ligne 0 est la ligne d'avant et la ligne N/nproc+1 la ligne d'apres
 
-    //printf("totalLignes %d\n",totalLignes);fflush(stdout);
     for (int i = 0; i < totalLignes; i++)
     {
         for (int j = 0; j < N; j++)
@@ -84,18 +80,6 @@ int main(int argc, char *argv[])
                 *(tab + i * N + j) = me;
         }
     }
-    /*
-    for(int k =0; k < nproc; k++){
-        if(k == me)
-            for(int i = 0; i<totalLignes; i++){
-                for(int j = 0; j<N; j++){
-                    printf(" %lf ",*(tab + i * N + j));fflush(stdout);
-                }
-                printf("\n");fflush(stdout);
-                }
-        MPI_Barrier(MPI_COMM_WORLD);
-    }
-    */
     
     MPI_Barrier(MPI_COMM_WORLD);
     sendLigne(me, nproc, N, totalLignes,tab);
@@ -118,6 +102,5 @@ int main(int argc, char *argv[])
 
     
     free(tab);
-   // free(ligneUp);
     return 0;
 }

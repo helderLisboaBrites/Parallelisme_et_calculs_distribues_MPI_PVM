@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
     double trueResultat;
     if (argc != 2)
     {
-        printf("Usage: %s <N> \n", argv[0]);
+        printf("Usage: %s <N> nombre de sous divisions \n", argv[0]);
         exit(-1);
     }
     
@@ -45,7 +45,6 @@ int main(int argc, char *argv[]){
     MPI_Bcast(&N,1,MPI_INT,0,MPI_COMM_WORLD);
 
     double resultat = integrale(N,me,nproc);
-    //printf("resultat aire = %lf moi = %d N=%d\n", resultat, me,N);
     MPI_Reduce(&resultat, &trueResultat, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD);
 
     if(me == 0){

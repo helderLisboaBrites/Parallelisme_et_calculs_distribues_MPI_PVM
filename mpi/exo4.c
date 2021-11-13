@@ -57,7 +57,6 @@ double convergence(double* f,double* fnew, int N, int totalLignes, int nproc){
     }
     MPI_Reduce(&err, &errResult, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD);
     MPI_Bcast(&errResult,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD);
-    //printf("err : %lf \n",errResult);fflush(stdout);
     return sqrt( errResult );
 }
 
@@ -71,26 +70,19 @@ void distributionLignes(int me,int nproc,int N, double* f, int totalLignes, MPI_
 void laplace(int me, double* f,double* fnew, int N, int totalLignes, int nproc, MPI_Status *status){
     int test =1;
     while(test){
-        //printf("----------------------\n");fflush(stdout);
-
         for(int i =1; i< totalLignes-1; i++){
             for(int j = 1; j < N-1; j++){
                 *(fnew + i*N + j) = 0.25 * ( *(f + (i+1)*N + j) + *(f + (i-1)*N + j)
                                            + *(f + i*N + j+1) + *(f + i*N + j-1));
-                                           //printf(" %lf ",*(fnew + i*N + j));fflush(stdout);
             }
-            //printf("\n");fflush(stdout);
-
         }
         test = (convergence(f, fnew, N, totalLignes, nproc) > 0.000001);
-        
         for(int i =1; i< totalLignes-1; i++){
             for(int j = 0; j < N; j++){
                 *(f+i*N+j) = *(fnew+i*N+j); 
             }
         }
         distributionLignes(me, nproc, N, f, totalLignes, status);
-        
     }
 }
 
@@ -122,10 +114,9 @@ int main(int argc, char *argv[])
 
     double *f = (double *) calloc(N * totalLignes , sizeof(double)); 
     double *fnew = (double *) calloc(N * totalLignes , sizeof(double)); 
-    // plus deux ligne celle d'avant et celle d'apres 
+    // + 2 lignes (celle d'avant et celle d'apres) 
     // donc la ligne 0 est la ligne d'avant et la ligne N/nproc+1 la ligne d'apres
 
-    //printf("totalLignes %d\n",totalLignes);fflush(stdout);
     for (int i = 0; i < totalLignes; i++)
     {
         for (int j = 0; j < N; j++)
@@ -159,12 +150,9 @@ int main(int argc, char *argv[])
                 }
                 printf("\n");fflush(stdout);
                 }
-        //printf("\n");fflush(stdout);
         }
         MPI_Barrier(MPI_COMM_WORLD);
     }
-
-    
     free(f);
     free(fnew);
     return 0;
