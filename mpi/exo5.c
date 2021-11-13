@@ -13,7 +13,8 @@ void sendLigne(int me, int nproc, int N, int totalLignes, double *tab)
 {
     MPI_Request r;
     if (me == 0)
-    {
+    {   //Le premier coin envoie à droite et en bas
+        MPI_Isend(tab + N * (totalLignes-2), N, MPI_DOUBLE_PRECISION, 1, 0, MPI_COMM_WORLD,&r);
         MPI_Isend(tab + N * (totalLignes-2), N, MPI_DOUBLE_PRECISION, 1, 0, MPI_COMM_WORLD,&r);
     }
     else if (me == nproc-1)
@@ -118,35 +119,47 @@ int main(int argc, char *argv[])
 
 
 
-    int totalLignes = N/nproc +2; 
+    int N_local = N/sqrt(nproc) +2;
 
-    double *f = (double *) calloc(N * totalLignes , sizeof(double)); 
-    double *fnew = (double *) calloc(N * totalLignes , sizeof(double)); 
+    double *f = (double *) calloc(N_local * N_local , sizeof(double)); 
+    double *fnew = (double *) calloc(N_local * N_local , sizeof(double)); 
     // plus deux ligne celle d'avant et celle d'apres 
     // donc la ligne 0 est la ligne d'avant et la ligne N/nproc+1 la ligne d'apres
 
-    //printf("totalLignes %d\n",totalLignes);fflush(stdout);
-    for (int i = 0; i < totalLignes; i++)
+    printf("totalLignes %d\n",N_local);fflush(stdout);
+    MPI_Barrier(MPI_COMM_WORLD);
+    for (int i = 0; i < N_local; i++)
     {
-        for (int j = 0; j < N; j++)
+        for (int j = 0; j < N_local; j++)
         {
-            if(i == 0 || i == totalLignes-1 )
-                *(f + i * N + j) = -1;
+            if(i == 0 || i == N_local-1 || j==0 || j==N_local-1)
+                *(f + i * N_local + j) = -1;
             else 
-                *(f + i * N + j) = me;
+                *(f + i * N_local + j) = me;
         }
     }
-
+    /*
+    if(me ==3){
+        for (int i = 0; i < N_local; i++)
+        {
+            for (int j = 0; j < N_local; j++){
+                printf(" %2.3f ",*(f + i * N_local + j));fflush(stdout);
+            }
+        printf("\n");fflush(stdout);
+        }
+    printf("\n");fflush(stdout);
+    }*/
+/*
     //Partage des lignes up et down
     distributionLignes(me, nproc, N, f, totalLignes, &status);
 
     //Calcul de laplce
     laplace(me, f,fnew, N, totalLignes, nproc, &status);
 
-
+*/
     MPI_Barrier(MPI_COMM_WORLD);
-    int i,fin;
-
+    //int i,fin;
+/*
      for(int k =0; k < nproc; k++){
         if(k == me){
             if(me ==0) {i = 0; fin = totalLignes-1;}
@@ -163,8 +176,48 @@ int main(int argc, char *argv[])
         }
         MPI_Barrier(MPI_COMM_WORLD);
     }
+*/
+/*
+    for(int i=0; i < N_local*(int)sqrt(nproc) ;i++){
+        for(int k =0; k < nproc; k++){
+            if(k == me && (i/(int)sqrt(nproc)) ==me){
+                for(int j=0;j<N_local;j++){
+                    printf(" %.3f ",*(f + (i%N_local) * N_local + j));fflush(stdout);
+                }
+            }
+            MPI_Barrier(MPI_COMM_WORLD);
+        }
+        if(me==0)
+            printf("\n");fflush(stdout);
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+*/
+    MPI_Comm comm;
+    MPI_Comm_split(MPI_COMM_WORLD, me / (int)sqrt(nproc), me, &comm);
+    int row_rank, row_size;
+    MPI_Comm_rank(comm, &row_rank);
+    MPI_Comm_size(comm, &row_size);
+    //printf(" moi = %d -- %d -- %d",me,row_rank,row_size);fflush(stdout);
+    for(int l = 0; l < (int)sqrt(nproc); l++){
+        //
+        if( l * (int)sqrt(nproc) <= me && me < (l+1) * (int)sqrt(nproc) ){
+            for(int i =0; i<N_local ; i++){
+                for(int k = l * (int)sqrt(nproc); k <(l+1) * (int)sqrt(nproc); k++){
+                    if(k==me){
+                        for(int j =0; j<N_local ; j++){
+                            printf(" %2.3f ",*(f + i * N_local + j));fflush(stdout);
+                        }
+                    }
+                    MPI_Barrier(comm);
+                }
+                if(me == (l+1) * (int)sqrt(nproc)-1)
+                    printf(" \n ");fflush(stdout);
+                MPI_Barrier(comm);
+            }
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
 
-    
     free(f);
     free(fnew);
     return 0;

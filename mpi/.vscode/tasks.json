@@ -16,7 +16,7 @@
         {
             "label": "build exo3_copy",
             "type": "shell",
-            "command": "ls && make ./exo3_copy && mpirun -np 4 ./bin/exo3_copy 16",
+            "command": "ls && make ./exo3_copy && mpirun -np 4 ./bin/exo3_copy 8",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
@@ -26,7 +26,27 @@
         {
             "label": "build exo4",
             "type": "shell",
-            "command": "make ./exo4 && mpirun -np 4 ./bin/exo4 16",
+            "command": "make ./exo4 && mpirun -np 4 ./bin/exo4 8",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build exo5",
+            "type": "shell",
+            "command": "make ./exo5 && mpirun -np 4 ./bin/exo5 8",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build exo2",
+            "type": "shell",
+            "command": "make ./exo2 && mpirun -np 4 ./bin/exo2 1000000",
             "problemMatcher": [],
             "group": {
                 "kind": "build",

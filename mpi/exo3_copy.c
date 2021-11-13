@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     // plus deux ligne celle d'avant et celle d'apres 
     // donc la ligne 0 est la ligne d'avant et la ligne N/nproc+1 la ligne d'apres
 
-    printf("totalLignes %d\n",totalLignes);fflush(stdout);
+    //printf("totalLignes %d\n",totalLignes);fflush(stdout);
     for (int i = 0; i < totalLignes; i++)
     {
         for (int j = 0; j < N; j++)
